@@ -53,7 +53,26 @@ which shows:
 - `show_every::T = 100`: Display progress at intervals of this number of iterations
 
 
-## 2D MNIST example
+## A 2D MNIST example image
+The plot below was produced by running:
+
+```jlcon
+using TSNE
+Y = tsne(X, 2, perplexity = 40.0)
+```  
+to produce the low dimension map `Y` and then
+
+```jlcon
+using Gadfly, Colors
+set_default_plot_size(24cm, 18cm)
+
+palette = distinguishable_colors(10)
+p = plot(x = Y[1, :], y = Y[2, :], color=labels, Geom.point,
+         Guide.xlabel("y₁"), Guide.ylabel("y₂"),
+         Scale.color_discrete_manual(palette..., levels=collect(0:9)), Theme(colorkey_swatch_shape=:circle))
+```  
+to produce the image.
+
 <p align="center">
-  <img src="demo/tsneplot.png" width="500"/>
+  <img src="demo/tsneplot.png" width="800"/>
 </p>
