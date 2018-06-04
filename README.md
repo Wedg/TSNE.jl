@@ -57,10 +57,22 @@ which shows:
 The plot below was produced by running:
 
 ```jlcon
+using MNIST
+n = 5000
+X = Array{Float64}(784, n)
+labels = Array{Int64}(n)
+for i = 1:n
+    X[:, i] = trainfeatures(i) ./ 255
+    labels[i] = trainlabel(i)
+end
+```
+to load the data,
+
+```jlcon
 using TSNE
 Y = tsne(X, 2, perplexity = 40.0)
 ```  
-to produce the low dimension map `Y` and then
+to produce the low dimension map `Y`, and 
 
 ```jlcon
 using Gadfly, Colors
