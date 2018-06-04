@@ -83,7 +83,7 @@ Performs, for each column (point j), a binary search for the value  βⱼ = 1 / 
 returns the matrix of conditional probabilities pᵢ∣ⱼ. Each column sums to 1 i.e. ∑ᵢpᵢ∣ⱼ = 1.
 """
 function conditional_p(D::AbstractMatrix{F}, perplexity::F, tol::F,
-                       maxiter::T) where {T<:Integer, F<:AbstractFloat}
+                       max_iter::T) where {T<:Integer, F<:AbstractFloat}
 
     # Number of observations - columns of X
     n = size(D, 1)
@@ -115,7 +115,7 @@ function conditional_p(D::AbstractMatrix{F}, perplexity::F, tol::F,
         βj = F(1)
 
         # Binary search loop
-        for iter in 1:maxiter
+        for iter in 1:max_iter
 
             # Calculate conditional probabilities and entropy given βj
             Hj = entropy_and_conditional_p!(Pj, Dj, βj)
@@ -133,7 +133,7 @@ function conditional_p(D::AbstractMatrix{F}, perplexity::F, tol::F,
             end
 
             # Warn if max iterations reached
-            iter == maxiter && warn("Max iterations reached for column $j with perplexity = $(2^Hj)")
+            iter == max_iter && warn("Max iterations reached for column $j with perplexity = $(2^Hj)")
         end
 
         # Save the results
@@ -162,9 +162,9 @@ end
 """
 Create the matrix P of joint probabilities in high dimension space
 """
-function create_P(X::AbstractMatrix{F}, perplexity::F, tol::F, maxiter::T) where {T<:Integer, F<:AbstractFloat}
+function create_P(X::AbstractMatrix{F}, perplexity::F, tol::F, max_iter::T) where {T<:Integer, F<:AbstractFloat}
     D = pairwise_sq_euc_dist(X,  prevfloat(F(Inf)))
-    P = conditional_p(D, perplexity, tol, maxiter)
+    P = conditional_p(D, perplexity, tol, max_iter)
     joint_p!(P)
     return P
 end
@@ -323,11 +323,10 @@ end
 t() = Dates.format(now(), "HH:MM:SS")
 
 """
-    tsne(X, d, [perplexity = 30.0, perplexity_tol = 1e-5, perplexity_maxiter = 50,
+    tsne(X, d, [perplexity = 30.0, perplexity_tol = 1e-5, perplexity_max_iter = 50,
                 pca_init = true, pca_dims = 30, exag = 12.0, stop_exag = 250,
                 μ_init = 0.5, μ_final = 0.8, μ_switch = 250,
-                η = 100.0, min_gain = 0.01, maxiter = 1000,
-                η = 100.0, min_gain = 0.01, maxiter = 1000])
+                η = 100.0, min_gain = 0.01, num_iter = 1000])
 
 ### Input types
 - `F::AbstractFloat`
@@ -340,7 +339,7 @@ t() = Dates.format(now(), "HH:MM:SS")
 ### Keyword arguments and default values
 - `perplexity::F = 30.0`: User specified perplexity for each conditional distribution
 - `perplexity_tol::F = 1e-5`: Tolerence for binary search of bandwidth
-- `perplexity_maxite::T = 50`: Maximum number of iterations used in binary search for bandwidth
+- `perplexity_max_iter::T = 50`: Maximum number of iterations used in binary search for bandwidth
 - `pca_init::Bool = true`: Choose whether to perform PCA before running t-SNE
 - `pca_dims::T = 30`: Number of dimensions to reduce to using PCA before applying t-SNE
 - `exag::T = 12`: Early exaggeration - multiply all pᵢⱼ's by this constant
@@ -350,15 +349,15 @@ t() = Dates.format(now(), "HH:MM:SS")
 - `μ_switch::T = 250`: Switch from initial to final momentum parameter at this iteration
 - `η::F = 100.0`: Learning rate
 - `min_gain::F = 0.01`: Minimum gain for adaptive learning
-- `maxiter::T = 1000`: Maximum number of iterations
+- `num_iter::T = 1000`: Number of iterations
 - `show_every::T = 100`: Display progress at intervals of this number of iterations
 """
 function tsne(X::AbstractMatrix{F}, d::T;
-              perplexity::F = 30.0, perplexity_tol::F = 1e-5, perplexity_maxiter::T = 50,
+              perplexity::F = 30.0, perplexity_tol::F = 1e-5, perplexity_max_iter::T = 50,
               pca_init::Bool = true, pca_dims::T = 30,
               exag::F = 12.0, stop_exag::T = 250,
               μ_init::F = 0.5, μ_final::F = 0.8, μ_switch::T = 250,
-              η::F = 100.0, min_gain::F = 0.01, maxiter::T = 1000,
+              η::F = 100.0, min_gain::F = 0.01, num_iter::T = 1000,
               show_every::T = 100) where {T<:Integer, F<:AbstractFloat}
 
     # Number of observations
@@ -375,7 +374,7 @@ function tsne(X::AbstractMatrix{F}, d::T;
     # Create P Matrix
     print(t())
     @printf(" Computing high dimension joint probabilities ...")
-    P = create_P(X, perplexity, perplexity_tol, perplexity_maxiter)
+    P = create_P(X, perplexity, perplexity_tol, perplexity_max_iter)
     @printf(" completed\n\n")
     scale!(P, exag)             # early exaggeration
 
@@ -392,7 +391,7 @@ function tsne(X::AbstractMatrix{F}, d::T;
 
     # Gradient descent updates
     println("Running gradient descent updates ...")
-    for iter in 1:maxiter
+    for iter in 1:num_iter
 
         # Calculate Q probabilities
         sumQ = joint_q!(Qtop, s, Y)
