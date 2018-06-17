@@ -20,7 +20,7 @@ tsne(X, d, [perplexity = 30.0, perplexity_tol = 1e-5, perplexity_max_iter = 50,
             μ_init = 0.5, μ_final = 0.8, μ_switch = 250,
             η = 100.0, min_gain = 0.01, num_iter = 1000])
 ```
-with `X` containing the data with features in rows and observations in columns.
+with `X` containing the data with features in rows and observations in columns and `d` the number of dimensions to reduce to (typically 2 or 3 for visualisations).
 
 All the options are described in more detail by running the help request i.e.
 ```jlcon
@@ -72,7 +72,7 @@ to load the data,
 using TSNE
 Y = tsne(X, 2, perplexity = 40.0)
 ```  
-to produce the low dimension map `Y`, and 
+to produce the low dimension map `Y`, and
 
 ```jlcon
 using Gadfly, Colors
